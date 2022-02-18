@@ -1,6 +1,6 @@
 # ALlib
 
-ALlib is a lightweight event-driven C based socket library for embedded systems. By using the multiplexing mechanism, it's possible to use callbacks in applications rather than using the polling mechanism.
+ALlib is a lightweight socket library for embedded systems written in C. By using the multiplexing mechanism, it's possible to use callbacks in applications beside the traditional polling mechanism.
 ## Installation
 
 ALlib is based on Cmake, so just building and installing ALlib is as simple as follows:
