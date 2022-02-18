@@ -1,4 +1,4 @@
-﻿// SPDX-License-Identifier: GPL-2.0-only
+﻿// SPDX-License-Identifier: MIT
 /** @file al.c
  *
  * @brief AL lightweight socket library source file.
