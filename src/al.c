@@ -43,7 +43,9 @@ int32_t srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t port_
 
     bzero(&g_addr, sizeof (g_addr));
     g_addr.sin_family = AF_INET;
-    if(strlen(bind_ip) > 0)
+
+    if(bind_ip != NULL &&
+            strlen(bind_ip) > 0)
     {
         g_addr.sin_addr.s_addr = inet_addr(bind_ip);
     }
