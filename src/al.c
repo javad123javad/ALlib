@@ -25,10 +25,10 @@
 static struct sockaddr_in g_addr;
 
 /**
- * @brief srv_open_sock:    opens a socket
+ * @brief al_srv_open_sock:    opens a socket
  * @return On success: the socket, On failure: error code
  */
-int32_t srv_open_sock()
+int32_t al_srv_open_sock()
 {
     int sock = 0;
     int optionValue = 1;
@@ -42,14 +42,14 @@ int32_t srv_open_sock()
 }
 
 /**
- * @brief srv_bind_sock:   binds a socket to a port [and ip address (optional)]
+ * @brief al_srv_bind_sock:   binds a socket to a port [and ip address (optional)]
  *
  * @param sockfd socket file descriptor
  * @param bind_ip IP address to bind to
  * @param port_num port number to bind to
  * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
  */
-int32_t srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t port_num)
+int32_t al_srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t port_num)
 {
     int32_t fret = -1;
 
@@ -79,14 +79,14 @@ int32_t srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t port_
 }
 
 /**
- * @brief srv_listen_sock:   listens on a socket
+ * @brief al_srv_listen_sock:   listens on a socket
  *
  * @param sockfd socket file descriptor
  * @param max_conn the maximum length to which the  queue  of
        pending  connections  for sockfd may grow.
  * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
  */
-int32_t srv_listen_sock(int32_t sockfd, const uint8_t max_conn)
+int32_t al_srv_listen_sock(int32_t sockfd, const uint8_t max_conn)
 {
     int32_t fret = -1;
 
@@ -102,7 +102,7 @@ int32_t srv_listen_sock(int32_t sockfd, const uint8_t max_conn)
 }
 
 /**
- * @brief srv_accept_sock:   accepts a connection on a socket
+ * @brief al_srv_accept_sock:   accepts a connection on a socket
  *
  * @param sockfd socket file descriptor
  * @param cli a pointer to a sockaddr structure.  This structure
@@ -110,7 +110,7 @@ int32_t srv_listen_sock(int32_t sockfd, const uint8_t max_conn)
         to the communications  layer.
  * @return int32_t On success: the peer client socket, On failure: -1 and errno is set appropriately
  */
-int32_t srv_accept_sock(int32_t sockfd, struct sockaddr_in *cli)
+int32_t al_srv_accept_sock(int32_t sockfd, struct sockaddr_in *cli)
 {
     int cli_sck = -1;
     socklen_t cli_length = sizeof(*cli);
@@ -128,14 +128,14 @@ int32_t srv_accept_sock(int32_t sockfd, struct sockaddr_in *cli)
 }
 
 /**
- * @brief write_sock:   write into a socket
+ * @brief al_write_sock:   write into a socket
  *
  * @param sockfd socket file descriptor
  * @param buf the buffer to be written into the socket
  * @param len the length of the buffer
  * @return ssize_t On success: the number of bytes written, On failure: -1 and errno is set appropriately
  */
-ssize_t write_sock(int32_t sockfd, const void *buf, size_t len)
+ssize_t al_write_sock(int32_t sockfd, const void *buf, size_t len)
 {
     ssize_t fret = -1;
 
@@ -152,14 +152,14 @@ ssize_t write_sock(int32_t sockfd, const void *buf, size_t len)
 }
 
 /**
- * @brief read_sock:   read from a socket
+ * @brief al_read_sock:   read from a socket
  *
  * @param sockfd socket file descriptor
  * @param buf the buffer to be read from the socket
  * @param len the length of the buffer
  * @return ssize_t On success: the number of bytes read, On failure: -1 and errno is set appropriately
  */
-ssize_t read_sock(int32_t cli_sockfd, void *buf, size_t len)
+ssize_t al_read_sock(int32_t cli_sockfd, void *buf, size_t len)
 {
     ssize_t fret = -1;
     fret = read(cli_sockfd, buf, len);
@@ -167,12 +167,12 @@ ssize_t read_sock(int32_t cli_sockfd, void *buf, size_t len)
 }
 
 /**
- * @brief srv_close_sock:   closes a socket
+ * @brief al_close_sock:   closes a socket
  *
  * @param sockfd socket file descriptor
  * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
  */
-int32_t srv_close_sock(int32_t sockfd)
+int32_t al_close_sock(int32_t sockfd)
 {
     int32_t fret = -1;
 
@@ -187,13 +187,13 @@ int32_t srv_close_sock(int32_t sockfd)
 }
 
 /**
- * @brief srv_get_ip_addr:   gets the ip address of the local machine
+ * @brief al_get_ip_addr:   gets the ip address of the local machine
  *
  * @param ip_addr a pointer to a buffer to store the ip address
  * @param len the length of the buffer
  * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
  */
-int32_t srv_get_ip_addr(char ip_addr[], const size_t len)
+int32_t al_get_ip_addr(char ip_addr[], const size_t len)
 {
     int32_t fret = -1;
     struct ifaddrs *ifaddr, *ifa;
@@ -225,9 +225,10 @@ int32_t srv_get_ip_addr(char ip_addr[], const size_t len)
                 continue;
             }
 
-            strncpy(ip_addr, host, len);
+            strncat(ip_addr, host, len);
+            strcat(ip_addr, " ");
             fret = 0;
-            break;
+            // break;
         }
     }
 
@@ -260,14 +261,14 @@ static int32_t srv_register_new_socket(int client_socket_fd, int *cli_sock_fd, i
 }
 
 /**
- * @brief srv_serve_reqs:   serves requests from clients
+ * @brief al_srv_serve_reqs:   serves requests from clients
  *
  * @param sockfd server socket file descriptor
  * @param serve_cb callback function to serve requests
  * @param payload payload to be passed to the callback function
  * @return int32_t this function never returns :)
  */
-int32_t srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload *payload))
+int32_t al_srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload *payload))
 {
     int fret = -1;
     fd_set read_fd_set;
@@ -336,7 +337,7 @@ int32_t srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload *payload))
             int client_socket_fd = client_socks[i];
             if (FD_ISSET(client_socket_fd, &read_fd_set))
             {
-                ssize_t read_bytes = read_sock(client_socket_fd, input_buffer, BUFFER_SIZE);
+                ssize_t read_bytes = al_read_sock(client_socket_fd, input_buffer, BUFFER_SIZE);
 
                 if (read_bytes < 0)
                 {
@@ -377,13 +378,13 @@ int32_t srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload *payload))
 }
 
 /**
- * @brief cli_connect:   connect to a server
+ * @brief al_client_connect:   connect to a server
  *
  * @param ip_addr the ip address of the server
  * @param port_num the port number of the server
- * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
+ * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
  */
-int32_t cli_connect(const char ip_addr[],
+int32_t al_client_connect(const char ip_addr[],
                     const uint16_t port_num)
 {
     int32_t cli_sock = -1;
@@ -408,7 +409,7 @@ int32_t cli_connect(const char ip_addr[],
 
     if (fret)
     {
-        perror("[cli_connect]");
+        perror("[al_client_connect]");
         close(cli_sock);
         return fret;
     }
