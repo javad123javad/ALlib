@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 #define BUFFER_SIZE             1024
+#define BUFFER_SIZE_SMALL       16
 #define MAX_CONNECTIONS         32
 
 typedef struct _client_payload
@@ -39,6 +40,8 @@ int32_t al_srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload * payload));
 int32_t al_close_sock(int32_t sockfd);
 int32_t al_client_connect(const char ip_addr[], const uint16_t port_num);
 int32_t al_get_ip_addr(char ip_addr[], const size_t len);
+int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len);
+
 ssize_t al_write_sock(int32_t cli_sockfd, const void * buf, size_t len);
 ssize_t al_read_sock(int32_t cli_sockfd, void * buf, size_t len);
 

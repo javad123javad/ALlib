@@ -199,7 +199,7 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
     struct ifaddrs *ifaddr, *ifa;
     int32_t family, s;
     char host[NI_MAXHOST];
-    char buf[BUFFER_SIZE*2] = {0};
+    char buf[BUFFER_SIZE * 2] = {0};
 
     if (0 != getifaddrs(&ifaddr))
     {
@@ -238,6 +238,46 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
 
     freeifaddrs(ifaddr);
 
+    return fret;
+}
+/**
+ * @brief al_get_mac_addr:   gets the mac address of the local machine
+ *
+ * @param mac_addr a pointer to a buffer to store the mac address
+ * @param len the length of the buffer
+ * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
+ */
+int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len)
+{
+
+    int32_t fret = -1;
+    struct ifreq s;
+    int fd; 
+    unsigned char buf[BUFFER_SIZE_SMALL] = {0};
+
+    if(iface == NULL)
+    {
+        return fret;
+    }
+
+    strcpy(s.ifr_name, iface);
+    fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if (-1 == fd)
+    {
+        perror("Socket");
+        return fret;
+    }
+    if (0 == ioctl(fd, SIOCGIFHWADDR, &s))
+    {
+        int i;
+        for (i = 0; i < 6; ++i)
+        {
+            sprintf(buf, " %02x", (unsigned char)s.ifr_addr.sa_data[i]);
+            strncat(mac_addr, buf, strlen(buf));
+            bzero(buf, BUFFER_SIZE_SMALL);
+        }
+        fret = 0;
+    }
     return fret;
 }
 
@@ -389,7 +429,7 @@ int32_t al_srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload *payload))
  * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
  */
 int32_t al_client_connect(const char ip_addr[],
-                    const uint16_t port_num)
+                          const uint16_t port_num)
 {
     int32_t cli_sock = -1;
     int32_t fret = -1;
