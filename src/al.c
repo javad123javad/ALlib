@@ -189,7 +189,7 @@ int32_t al_close_sock(int32_t sockfd)
 /**
  * @brief al_get_ip_addr:   gets the ip address of the local machine
  *
- * @param ip_addr a pointer to a buffer to store the ip address
+ * @param ip_addr a pointer to a buffer to store the ip addresses in iface:ip format
  * @param len the length of the buffer
  * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
  */
@@ -199,6 +199,7 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
     struct ifaddrs *ifaddr, *ifa;
     int32_t family, s;
     char host[NI_MAXHOST];
+    char buf[BUFFER_SIZE*2] = {0};
 
     if (0 != getifaddrs(&ifaddr))
     {
@@ -225,8 +226,11 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
                 continue;
             }
 
-            strncat(ip_addr, host, len);
+            sprintf(buf, "%s:%s", ifa->ifa_name, host);
+
+            strncat(ip_addr, buf, strlen(buf));
             strcat(ip_addr, " ");
+            bzero(buf, BUFFER_SIZE);
             fret = 0;
             // break;
         }
