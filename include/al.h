@@ -13,12 +13,14 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <linux/if_link.h>
 #include <stdlib.h>
+
 
 #define BUFFER_SIZE             1024
 #define BUFFER_SIZE_SMALL       16
 #define MAX_CONNECTIONS         32
-
+#define IF_NAMESIZE             128
 typedef struct _client_payload
 {
     int32_t cli_sock;
@@ -26,6 +28,18 @@ typedef struct _client_payload
     char * payload;
     struct sockaddr_in cli_info;
 }cpayload;
+
+typedef struct _if_stats{
+    char iface[IF_NAMESIZE];
+    uint32_t rx_packets;
+    uint32_t rx_bytes;
+    uint32_t rx_errors;
+    uint32_t rx_dropped;
+    uint32_t tx_packets;
+    uint32_t tx_bytes;
+    uint32_t tx_errors;
+    uint32_t tx_dropped;
+}if_stats;
 
 #ifdef __cplusplus
     extern "C" {
@@ -41,6 +55,7 @@ int32_t al_close_sock(int32_t sockfd);
 int32_t al_client_connect(const char ip_addr[], const uint16_t port_num);
 int32_t al_get_ip_addr(char ip_addr[], const size_t len);
 int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len);
+int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats * stats);
 
 ssize_t al_write_sock(int32_t cli_sockfd, const void * buf, size_t len);
 ssize_t al_read_sock(int32_t cli_sockfd, void * buf, size_t len);

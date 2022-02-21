@@ -6,10 +6,19 @@
  * COPYRIGHT NOTICE: (c) 2022 Javad Rahimi.  All rights reserved.
  */
 #include "al.h"
+
+#include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+#include <linux/if_link.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <ifaddrs.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <ifaddrs.h>
@@ -252,10 +261,10 @@ int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len)
 
     int32_t fret = -1;
     struct ifreq s;
-    int fd; 
+    int fd;
     unsigned char buf[BUFFER_SIZE_SMALL] = {0};
 
-    if(iface == NULL)
+    if (iface == NULL)
     {
         return fret;
     }
@@ -280,7 +289,38 @@ int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len)
     }
     return fret;
 }
+/**
+ * @brief al_get_if_stats :   gets the statistics of the specified interface
+ *
+ * @param iface    the interface name
+ * @param stats    a pointer to a struct if_stats to store the statistics
+ * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
+ */
+int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats *if_stats)
+{
+    struct ifaddrs *ifaddr, *ifa;
+    int32_t family, s, n, ret = -1;
 
+    if (getifaddrs(&ifaddr) == -1)
+    {
+        perror("getifaddrs");
+        return ret;
+    }
+
+    for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++)
+    {
+        if ((ifa->ifa_addr == NULL) || (strcmp(ifa->ifa_name, iface) !=0))
+            continue;
+
+        family = ifa->ifa_addr->sa_family;
+
+        if (family == AF_PACKET && ifa->ifa_data != NULL)
+        {
+            struct rtnl_link_stats *stats = ifa->ifa_data;
+            memcpy(if_stats, stats,sizeof(struct rtnl_link_stats));
+        }
+    }
+}
 /**
  * @brief srv_register_new_socket : registers a new socket for the server
  *

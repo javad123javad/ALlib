@@ -58,7 +58,9 @@ Thumbs.db
 *.opensdf
 *.vcxproj
 *vcxproj.*
-
+.vscode/
+*.vscode*
+./.vscode/settings.json
 # MinGW generated files
 *.Debug
 *.Release
