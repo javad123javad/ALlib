@@ -13,7 +13,15 @@ $ make
 $ sudo make install
 ```
 ## Usage
-Include `al.h` header file in you project and enjoy it ;)
+Include `al.h` header file in you project and link it with AL library. A simple `cmake` configuration is depicted below:
+```cmake
+cmake_minimum_required(VERSION 3.5)
+
+project(AL_test LANGUAGES C)
+
+add_executable(AL_test main.c)
+target_link_libraries(AL_test al)
+```
 ## Examples
 ### Server Polling Example
 ```c
@@ -50,7 +58,7 @@ int main()
 } 
 ```
 ### Multithread Server Example
-```c++
+```c
 #include <al.h>
 #include <iostream>
 #include <thread>
@@ -103,11 +111,9 @@ int main(int argc, char *argv[])
 }
 ```
 
-
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-Please make sure to update tests as appropriate.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
