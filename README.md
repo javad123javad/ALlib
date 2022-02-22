@@ -1,9 +1,21 @@
 # ALlib
 
 ALlib is a lightweight socket library for embedded systems written in C. By using the multiplexing mechanism, it's possible to use callbacks in applications beside the traditional polling mechanism.
-## Installation
+## Compiling and Installation
 
-ALlib is based on Cmake, so just building and installing ALlib is as simple as follows:
+ALlib is based on Cmake. It's possible to make `ALlib` both as static and shared library.
+### Static library
+```bash
+$ git clone git@github.com:javad123javad/ALlib.git
+$ mkdir build
+$ cd build
+$ cmake -DBUILD_SHARED_LIBS=ON ..
+$ make
+$ sudo make install
+```
+
+### Shared library
+To build the `ALlib` as shared library, the `-DBUILD_SHARED_LIBS=ON` should passed to the cmake:
 ```bash
 $ git clone git@github.com:javad123javad/ALlib.git
 $ mkdir build
@@ -14,7 +26,17 @@ $ sudo make install
 ```
 ## Usage
 Include `al.h` header file in you project and link it with AL library. A simple `cmake` configuration is depicted below:
+* For static version of the library:
 ```cmake
+cmake_minimum_required(VERSION 3.5)
+
+project(AL_test LANGUAGES C)
+
+add_executable(AL_test main.c)
+target_link_libraries(AL_test libal.a)
+```
+* For the shared library:
+```bash
 cmake_minimum_required(VERSION 3.5)
 
 project(AL_test LANGUAGES C)
