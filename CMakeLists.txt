@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
-
 project(AL VERSION 1.0.1 DESCRIPTION "AL socket library" LANGUAGES C)
 include(GNUInstallDirs)
+# Enable Testing
+ENABLE_TESTING()
+# As moc files are generated in the binary dir, tell CMake
+# to always look for includes there:
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+add_subdirectory( test_server )
+# add_subdirectory(test_client)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
 
