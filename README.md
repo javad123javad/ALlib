@@ -56,14 +56,14 @@ int main()
     int client_socket;
     struct sockaddr_in client = {0};
     int ret = 0;
-    srv_socket = srv_open_sock();
-    ret = srv_bind_sock(srv_socket, NULL,1368);
+    srv_socket = al_srv_open_sock();
+    ret = al_srv_bind_sock(srv_socket, NULL,1368);
     if(ret < 0)
     {
         fprintf(stderr,"error in srv_bind_sock:%d\n", ret);
         exit(EXIT_FAILURE);
     }
-    ret = srv_listen_sock(srv_socket, 4);
+    ret = al_srv_listen_sock(srv_socket, 4);
     if(ret < 0)
     {
         fprintf(stderr,"error in srv_listen_sock:%d\n", ret);
@@ -71,11 +71,10 @@ int main()
         exit(EXIT_FAILURE);
     }
     while (1) {
-        client_socket = srv_accept(srv_socket, &client);
-        write_sock(client_socket,"Hello\n",6);
-        close(client_socket);
+        client_socket = al_srv_accept_sock(srv_socket, &client);
+        al_write_sock(client_socket,"Hello\n",6);
+        al_close_sock(client_socket);
     }
-
     return 0;
 } 
 ```
@@ -89,21 +88,21 @@ using namespace std;
 void server_cb(cpayload *payload)
 {
         fprintf(stderr, "Client IP: %s\n", inet_ntoa(payload->cli_info.sin_addr));
-        write_sock(payload->cli_sock, "Hello\n", 6);
+        al_write_sock(payload->cli_sock, "Hello\n", 6);
 
 }
 int main()
 {
     int ret = 0;
     int server_sock;
-    server_sock = srv_open_sock();
-    ret = srv_bind_sock(server_sock, nullptr, 1989);
+    server_sock = al_srv_open_sock();
+    ret = al_srv_bind_sock(server_sock, nullptr, 1989);
     if(ret < 0)
     {
         return -1;
     }
-    ret = srv_listen_sock(server_sock, 4);
-    thread server_thr(srv_serve_reqs, server_sock, server_cb);
+    ret = al_srv_listen_sock(server_sock, 4);
+    thread server_thr(al_srv_serve_reqs, server_sock, server_cb);
     server_thr.detach();
     while (1) {
 
@@ -117,17 +116,15 @@ int main()
 #include <stdio.h>
 #include <unistd.h>
 
-int main(int argc, char *argv[])
-{
-    int client_sock;
+int client_sock;
     char buf[1024] = {0};
-    client_sock = cli_connect("127.0.0.1",1368);
+    client_sock = al_client_connect("127.0.0.1",1368);
     if(client_sock < 0)
     {
         exit(EXIT_FAILURE);
     }
-    write_sock(client_sock,"Hello\n",6);
-    read_sock(client_sock, buf, 1024);
+    al_write_sock(client_sock,"Hello\n",6);
+    al_read_sock(client_sock, buf, 1024);
     printf("Recv:%s\n", buf);
     return 0;
 }
