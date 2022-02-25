@@ -37,16 +37,32 @@ static struct sockaddr_in g_addr;
  * @brief al_srv_open_sock:    opens a socket
  * @return On success: the socket, On failure: error code
  */
-int32_t al_srv_open_sock()
+int32_t al_srv_open_sock(const sock_type_t sock_type)
 {
     int sock = 0;
+    int fret = -1;
     int optionValue = 1;
-    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (-1 == sock)
+    switch (sock_type)
+    {
+    case SOCK_TCP:
+        sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        break;
+    case SOCK_UDP:
+        sock = socket(AF_INET, SOCK_DGRAM, 0);
+    
+    default:
+        break;
+    }
+    
+    if (-1 != sock)
     {
         perror("Sock Open");
+        fret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optionValue, sizeof(optionValue));
+        if (-1 == fret)
+        {
+            sock = -1;
+        }
     }
-    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optionValue, sizeof(optionValue));
     return sock;
 }
 
@@ -76,7 +92,7 @@ int32_t al_srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t po
     }
     g_addr.sin_port = htons(port_num);
 
-    fret = bind(sockfd, (struct sockaddr *)&g_addr, sizeof(g_addr));
+    fret = bind(sockfd, (const struct sockaddr *)&g_addr, sizeof(g_addr));
 
     if (-1 == fret)
     {
@@ -309,7 +325,7 @@ int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats *if_stats)
 
     for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++)
     {
-        if ((ifa->ifa_addr == NULL) || (strcmp(ifa->ifa_name, iface) !=0))
+        if ((ifa->ifa_addr == NULL) || (strcmp(ifa->ifa_name, iface) != 0))
             continue;
 
         family = ifa->ifa_addr->sa_family;
@@ -317,7 +333,7 @@ int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats *if_stats)
         if (family == AF_PACKET && ifa->ifa_data != NULL)
         {
             struct rtnl_link_stats *stats = ifa->ifa_data;
-            memcpy(if_stats, stats,sizeof(struct rtnl_link_stats));
+            memcpy(if_stats, stats, sizeof(struct rtnl_link_stats));
         }
     }
 }

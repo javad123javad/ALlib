@@ -1,4 +1,4 @@
-#include <al.h>
+#include "al.h"
 #include <unity/unity.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,13 +16,16 @@ void tearDown()
 
 void test_al_srv_open_sock(void)
 {
-    g_sock  = al_srv_open_sock();
+    g_sock  = al_srv_open_sock(SOCK_TCP);
     TEST_ASSERT_GREATER_THAN_INT32(0, g_sock);
 }
 
 void test_srv_bind_sock(void)
 {
+
     TEST_ASSERT_GREATER_OR_EQUAL_INT32(0, al_srv_bind_sock(g_sock, NULL, 35000));
+    
+    
 }
 
 void test_srv_listen_sock()
