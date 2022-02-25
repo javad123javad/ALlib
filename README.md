@@ -45,7 +45,7 @@ add_executable(AL_test main.c)
 target_link_libraries(AL_test al)
 ```
 ## Examples
-### Server Polling Example
+### TCP Server Polling Example
 ```c
 #include <al.h>
 #include <stdio.h>
@@ -78,7 +78,7 @@ int main()
     return 0;
 } 
 ```
-### Multithread Server Example
+### Multithread TCP Server Example
 ```c
 #include <al.h>
 #include <iostream>
@@ -108,6 +108,28 @@ int main()
 
     }
     return 0;
+}
+```
+### UDP Server Example
+```c
+#include <al.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#define BUF_LEN     1024
+
+int main(void)
+{
+    int32_t fret = 0, len;
+    char msg[BUF_LEN] = {0};
+    struct sockaddr_in clieaddr;
+    fret = al_srv_bind_sock(g_sock, NULL, 35000);
+    while (1)
+    {
+        fret = recvfrom(g_sock,msg, BUF_LEN, 0, (struct sockaddr *)&clieaddr, &len);
+        fprintf(stdout, "MSG:%s\n", msg);
+        bzero(msg, strlen(msg));
+    }
 }
 ```
 ### Client Example
