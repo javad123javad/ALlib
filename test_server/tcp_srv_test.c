@@ -77,7 +77,7 @@ int main(void)
     RUN_TEST(test_al_srv_open_sock);
     RUN_TEST(test_srv_bind_sock);
     RUN_TEST(test_srv_listen_sock);
-    RUN_TEST(test_srv_accepts);
+    RUN_TEST(test_srv_accept);
     RUN_TEST(test_cli_read);
     RUN_TEST(test_cli_write);
     close(g_cli);

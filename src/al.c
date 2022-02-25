@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include <linux/if_link.h>
 #include <arpa/inet.h>
@@ -30,9 +31,26 @@
         if (_DEBUG_)                             \
             fprintf(stderr, fmt, ##__VA_ARGS__); \
     } while (0)
+#define db_perror(err_msg)                      \
+    do                                          \
+    {                                           \
+        if (_DEBUG_)                            \
+            perror(err_msg);                    \
+    } while (0)
+    
 
 static struct sockaddr_in g_addr;
 
+static inline int32_t check_sock(const int32_t sock)
+{
+    if (-1 == sock)
+    {
+        db_perror("check_sock");
+        al_close_sock(sock);
+    }
+
+    return -1;
+}
 /**
  * @brief al_srv_open_sock:    opens a socket
  * @param sock_type The type of the socket (Current TCP and UDP are supported)
@@ -44,6 +62,7 @@ int32_t al_srv_open_sock(const sock_type_t sock_type)
     int sock = 0;
     int fret = -1;
     int optionValue = 1;
+
     switch (sock_type)
     {
     case SOCK_TCP:
@@ -51,14 +70,14 @@ int32_t al_srv_open_sock(const sock_type_t sock_type)
         break;
     case SOCK_UDP:
         sock = socket(AF_INET, SOCK_DGRAM, 0);
-    
+
     default:
         break;
     }
-    
+
     if (-1 != sock)
     {
-        perror("Sock Open");
+        db_perror("Sock Open");
         fret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optionValue, sizeof(optionValue));
         if (-1 == fret)
         {
@@ -98,7 +117,7 @@ int32_t al_srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t po
 
     if (-1 == fret)
     {
-        perror("Bind");
+        db_perror("Bind");
         close(sockfd);
     }
 
@@ -121,7 +140,7 @@ int32_t al_srv_listen_sock(int32_t sockfd, const uint8_t max_conn)
 
     if (-1 == fret)
     {
-        perror("Listen");
+        db_perror("Listen");
         close(sockfd);
     }
 
@@ -147,7 +166,7 @@ int32_t al_srv_accept_sock(int32_t sockfd, struct sockaddr_in *cli)
 
     if (-1 == cli_sck)
     {
-        perror("Accept");
+        db_perror("Accept");
         close(sockfd);
     }
 
@@ -171,7 +190,7 @@ ssize_t al_write_sock(int32_t sockfd, const void *buf, size_t len)
         fret = write(sockfd, buf, len);
         if (-1 == fret)
         {
-            perror("Write Sock");
+            db_perror("al_write_sock");
         }
     }
 
@@ -189,7 +208,17 @@ ssize_t al_write_sock(int32_t sockfd, const void *buf, size_t len)
 ssize_t al_read_sock(int32_t sockfd, void *buf, size_t len)
 {
     ssize_t fret = -1;
-    fret = read(cli_sockfd, buf, len);
+
+    if( (0 < sockfd) ||
+        (NULL != buf))
+    {
+        fret = read(sockfd, buf, len);
+        if(-1 == fret)
+        {
+            db_perror("al_read_sock");
+        }
+    }
+    
     return fret;
 }
 
@@ -207,7 +236,7 @@ int32_t al_close_sock(int32_t sockfd)
 
     if (-1 == fret)
     {
-        perror("Close Sock");
+        db_perror("Close Sock");
     }
 
     return fret;
@@ -230,7 +259,7 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
 
     if (0 != getifaddrs(&ifaddr))
     {
-        perror("Get Ip Addr");
+        db_perror("Get Ip Addr");
         return fret;
     }
 
@@ -249,7 +278,7 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
                             host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
             if (0 != s)
             {
-                perror("Get Name Info");
+                db_perror("Get Name Info");
                 continue;
             }
 
@@ -266,6 +295,7 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
 
     return fret;
 }
+
 /**
  * @brief al_get_mac_addr:   gets the mac address of the local machine
  *
@@ -290,7 +320,7 @@ int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len)
     fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
     if (-1 == fd)
     {
-        perror("Socket");
+        db_perror("Socket");
         return fret;
     }
     if (0 == ioctl(fd, SIOCGIFHWADDR, &s))
@@ -306,6 +336,7 @@ int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len)
     }
     return fret;
 }
+
 /**
  * @brief al_get_if_stats :   gets the statistics of the specified interface
  *
@@ -320,7 +351,7 @@ int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats *if_stats)
 
     if (getifaddrs(&ifaddr) == -1)
     {
-        perror("getifaddrs");
+        db_perror("getifaddrs");
         return ret;
     }
 
@@ -338,6 +369,7 @@ int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats *if_stats)
         }
     }
 }
+
 /**
  * @brief srv_register_new_socket : registers a new socket for the server
  *
@@ -496,7 +528,7 @@ int32_t al_client_connect(const char ip_addr[],
 
     if (-1 == cli_sock)
     {
-        perror("Socket");
+        db_perror("Socket");
         return cli_sock;
     }
 
@@ -510,7 +542,7 @@ int32_t al_client_connect(const char ip_addr[],
 
     if (fret)
     {
-        perror("[al_client_connect]");
+        db_perror("[al_client_connect]");
         close(cli_sock);
         return fret;
     }
@@ -522,15 +554,69 @@ int32_t al_client_connect(const char ip_addr[],
 
 /**
  * @brief al_recvfrom   receiving udp data from the socket
- * 
+ *
  * @param sockfd socket file descriptor
  * @param buf the buffer to be read from the socket
  * @param len the length of the buffer
+ * @param peer_sockaddr the peer address structure
+ * @param flags the flags to pass; accroding to recvfrom(2)
  * @return ssize_t  The number of bytes received, or -1 if an error occurred.
  *                  In the event of an error, errno is set to indicate the error.
  */
-ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len)
+ssize_t al_recvfrom(int32_t sockfd, void *buf, size_t len, struct sockaddr *peer_sockaddr, const int32_t flags)
 {
+    int fret = -1;
+    socklen_t sock_len = 0;
+    if (-1 == check_sock(sockfd))
+    {
+        return -1;
+    }
     
+    if(NULL == peer_sockaddr)
+    {
+        return -1;
+    }
+
+    fret = recvfrom(sockfd, buf, len, flags, peer_sockaddr, &sock_len);
+    if(-1 == fret)
+    {
+        db_perror("[al_recvfrom_");
+    }
+    return fret;
+
+}
+
+/**
+ * @brief 
+ * 
+ @param sockfd socket file descriptor
+ * @param buf the buffer to be read from the socket
+ * @param len the length of the buffer
+ * @param peer_sockaddr the peer address structure
+ * @param flags the flags to pass; accroding to sendto(2)
+ * @return  On success, these calls return the number of bytes sent.  
+ *          On error, -1 is returned, and errno is set appropriately. 
+ */
+ssize_t al_sendto(int32_t sockfd, const void * buf, size_t len, const struct sockaddr * peer_sockaddr, const int32_t flags)
+{
+    int fret = -1;
+    socklen_t sock_len = 0;
+    if (-1 == check_sock(sockfd))
+    {
+        return -1;
+    }
+    
+    if(NULL == peer_sockaddr)
+    {
+        return -1;
+    }
+
+    fret = sendto(sockfd, buf, len, flags, peer_sockaddr, sizeof(peer_sockaddr));
+    if(-1 == fret)
+    {
+        db_perror("al_sendto");
+    }
+
+    return fret;
 
 }

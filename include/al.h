@@ -58,8 +58,8 @@ ssize_t al_write_sock(int32_t sockfd, const void * buf, size_t len);
 ssize_t al_read_sock(int32_t sockfd, void * buf, size_t len);
 
 /* UDP sockets stufs */
-ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len, struct sockaddr * cli_sockaddr);
-
+ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len, struct sockaddr * cli_sockaddr, const int32_t flags);
+ssize_t al_sendto(int32_t sockfd, const void * buf, size_t len, const struct sockaddr * cli_sockaddr, const int32_t flags);
 
 #ifdef __cplusplus
     }
