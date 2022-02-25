@@ -523,12 +523,14 @@ int32_t al_client_connect(const char ip_addr[],
 /**
  * @brief al_recvfrom   receiving udp data from the socket
  * 
- * @param sockfd 
- * @param buf 
- * @param len 
- * @return ssize_t 
+ * @param sockfd socket file descriptor
+ * @param buf the buffer to be read from the socket
+ * @param len the length of the buffer
+ * @return ssize_t  The number of bytes received, or -1 if an error occurred.
+ *                  In the event of an error, errno is set to indicate the error.
  */
 ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len)
 {
+    
 
 }
