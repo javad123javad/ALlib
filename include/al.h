@@ -53,8 +53,13 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len);
 int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len);
 int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats * stats);
 
-ssize_t al_write_sock(int32_t cli_sockfd, const void * buf, size_t len);
-ssize_t al_read_sock(int32_t cli_sockfd, void * buf, size_t len);
+/* TCP socket stuffs */
+ssize_t al_write_sock(int32_t sockfd, const void * buf, size_t len);
+ssize_t al_read_sock(int32_t sockfd, void * buf, size_t len);
+
+/* UDP sockets stufs */
+ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len, struct sockaddr * cli_sockaddr,);
+
 
 #ifdef __cplusplus
     }

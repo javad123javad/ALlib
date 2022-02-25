@@ -186,7 +186,7 @@ ssize_t al_write_sock(int32_t sockfd, const void *buf, size_t len)
  * @param len the length of the buffer
  * @return ssize_t On success: the number of bytes read, On failure: -1 and errno is set appropriately
  */
-ssize_t al_read_sock(int32_t cli_sockfd, void *buf, size_t len)
+ssize_t al_read_sock(int32_t sockfd, void *buf, size_t len)
 {
     ssize_t fret = -1;
     fret = read(cli_sockfd, buf, len);
@@ -516,4 +516,19 @@ int32_t al_client_connect(const char ip_addr[],
     }
 
     return cli_sock;
+}
+
+/* UDP functions */
+
+/**
+ * @brief al_recvfrom   receiving udp data from the socket
+ * 
+ * @param sockfd 
+ * @param buf 
+ * @param len 
+ * @return ssize_t 
+ */
+ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len)
+{
+
 }
