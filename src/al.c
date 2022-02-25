@@ -35,6 +35,8 @@ static struct sockaddr_in g_addr;
 
 /**
  * @brief al_srv_open_sock:    opens a socket
+ * @param sock_type The type of the socket (Current TCP and UDP are supported)
+ *                  for TCP the SOCK_TCP and for UDP the SOCK_UDP should be passed.
  * @return On success: the socket, On failure: error code
  */
 int32_t al_srv_open_sock(const sock_type_t sock_type)
@@ -81,7 +83,7 @@ int32_t al_srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t po
     bzero(&g_addr, sizeof(g_addr));
     g_addr.sin_family = AF_INET;
 
-    if (bind_ip != NULL &&
+    if ((NULL != bind_ip) &&
         strlen(bind_ip) > 0)
     {
         g_addr.sin_addr.s_addr = inet_addr(bind_ip);
@@ -257,7 +259,6 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len)
             strcat(ip_addr, " ");
             bzero(buf, BUFFER_SIZE);
             fret = 0;
-            // break;
         }
     }
 
