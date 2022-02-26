@@ -7,7 +7,7 @@ ENABLE_TESTING()
 # to always look for includes there:
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_subdirectory( test_server )
-# add_subdirectory(test_client)
+add_subdirectory(test_client)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")

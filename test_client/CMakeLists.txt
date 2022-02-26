@@ -1,8 +1,17 @@
 
 cmake_minimum_required(VERSION 3.5)
-ADD_EXECUTABLE( allib_client_test main_test_client.c
+ADD_EXECUTABLE( allib_udp_cli_test udp_cli_test.c
     ../src/al.c
     ../include/al.h
     )
-ADD_TEST(  ALlib_client_test allib_server_test    )
-target_link_libraries(allib_client_test unity mnl)
+
+ADD_EXECUTABLE( allib_tcp_cli_test tcp_cli_test.c
+../src/al.c
+../include/al.h
+)
+
+ADD_TEST(  Allib_udp_cli_test allib_udp_cli_test    )
+ADD_TEST(  Allib_tco_cli_test allib_tcp_cli_test    )
+
+target_link_libraries(allib_udp_cli_test unity mnl)
+target_link_libraries(allib_tcp_cli_test unity mnl)
