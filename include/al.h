@@ -29,23 +29,19 @@ typedef struct _client_payload
     struct sockaddr_in cli_info;
 }cpayload;
 
-typedef struct _if_stats{
-    char iface[IF_NAMESIZE];
-    uint32_t rx_packets;
-    uint32_t rx_bytes;
-    uint32_t rx_errors;
-    uint32_t rx_dropped;
-    uint32_t tx_packets;
-    uint32_t tx_bytes;
-    uint32_t tx_errors;
-    uint32_t tx_dropped;
-}if_stats;
+typedef enum _sock_type_
+{
+    SOCK_TCP = 0x00,
+    SOCK_UDP = 0x01
+}sock_type_t;
+
+
 
 #ifdef __cplusplus
     extern "C" {
 #endif
 
-int32_t al_srv_open_sock(void);
+int32_t al_srv_open_sock(const sock_type_t sock_type);
 int32_t al_srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t port_num);
 int32_t al_srv_listen_sock(int32_t sockfd, const uint8_t max_conn);
 int32_t al_srv_accept_sock(int32_t sockfd, struct sockaddr_in *cli);
@@ -57,8 +53,13 @@ int32_t al_get_ip_addr(char ip_addr[], const size_t len);
 int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len);
 int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats * stats);
 
-ssize_t al_write_sock(int32_t cli_sockfd, const void * buf, size_t len);
-ssize_t al_read_sock(int32_t cli_sockfd, void * buf, size_t len);
+/* TCP socket stuffs */
+ssize_t al_write_sock(int32_t sockfd, const void * buf, size_t len);
+ssize_t al_read_sock(int32_t sockfd, void * buf, size_t len);
+
+/* UDP sockets stufs */
+ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len, struct sockaddr * cli_sockaddr, const int32_t flags);
+ssize_t al_sendto(int32_t sockfd, const void * buf, size_t len, const struct sockaddr * cli_sockaddr, const int32_t flags);
 
 #ifdef __cplusplus
     }
