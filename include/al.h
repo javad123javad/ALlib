@@ -59,7 +59,9 @@ ssize_t al_read_sock(int32_t sockfd, void * buf, size_t len);
 
 /* UDP sockets stufs */
 ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len, struct sockaddr * cli_sockaddr, const int32_t flags);
-ssize_t al_sendto(int32_t sockfd, const void * buf, size_t len, const struct sockaddr * cli_sockaddr, const int32_t flags);
+// ssize_t al_sendto(int32_t sockfd, const char *peer_ip, const int32_t peer_port, const void * buf, size_t len, const int32_t flags);
+// ssize_t al_cli_sendto(int32_t sockfd, struct sockaddr_in * peer, const void *data, const size_t len) __attribute__ ((flatten));
+ssize_t al_sendto(int32_t sockfd, const void *buf, const size_t buf_len, struct sockaddr *peer, const int32_t flags);
 
 #ifdef __cplusplus
     }

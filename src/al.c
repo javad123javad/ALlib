@@ -24,20 +24,19 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 
-#define _DEBUG_ 0
+#define _DEBUG_ 1
 #define dbg(fmt, ...)                            \
     do                                           \
     {                                            \
         if (_DEBUG_)                             \
             fprintf(stderr, fmt, ##__VA_ARGS__); \
     } while (0)
-#define db_perror(err_msg)                      \
-    do                                          \
-    {                                           \
-        if (_DEBUG_)                            \
-            perror(err_msg);                    \
+#define db_perror(err_msg)   \
+    do                       \
+    {                        \
+        if (_DEBUG_)         \
+            perror(err_msg); \
     } while (0)
-    
 
 static struct sockaddr_in g_addr;
 
@@ -47,9 +46,12 @@ static inline int32_t check_sock(const int32_t sock)
     {
         db_perror("check_sock");
         al_close_sock(sock);
+        return -1;
     }
-
-    return -1;
+    else
+    {
+        return 0;
+    }
 }
 /**
  * @brief al_srv_open_sock:    opens a socket
@@ -209,16 +211,16 @@ ssize_t al_read_sock(int32_t sockfd, void *buf, size_t len)
 {
     ssize_t fret = -1;
 
-    if( (0 < sockfd) ||
+    if ((0 < sockfd) ||
         (NULL != buf))
     {
         fret = read(sockfd, buf, len);
-        if(-1 == fret)
+        if (-1 == fret)
         {
             db_perror("al_read_sock");
         }
     }
-    
+
     return fret;
 }
 
@@ -558,7 +560,7 @@ int32_t al_client_connect(const char ip_addr[],
  * @param sockfd socket file descriptor
  * @param buf the buffer to be read from the socket
  * @param len the length of the buffer
- * @param peer_sockaddr the peer address structure
+ * @param peer_sockaddr the peer address structure. Set NULL, if not required.
  * @param flags the flags to pass; accroding to recvfrom(2)
  * @return ssize_t  The number of bytes received, or -1 if an error occurred.
  *                  In the event of an error, errno is set to indicate the error.
@@ -566,57 +568,61 @@ int32_t al_client_connect(const char ip_addr[],
 ssize_t al_recvfrom(int32_t sockfd, void *buf, size_t len, struct sockaddr *peer_sockaddr, const int32_t flags)
 {
     int fret = -1;
-    socklen_t sock_len = 0;
+    socklen_t sock_len = sizeof(*peer_sockaddr);
     if (-1 == check_sock(sockfd))
     {
         return -1;
     }
-    
-    if(NULL == peer_sockaddr)
+
+    if (NULL == peer_sockaddr)
     {
         return -1;
     }
 
     fret = recvfrom(sockfd, buf, len, flags, peer_sockaddr, &sock_len);
-    if(-1 == fret)
+    if (-1 == fret)
     {
         db_perror("[al_recvfrom_");
     }
     return fret;
-
 }
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  @param sockfd socket file descriptor
  * @param buf the buffer to be read from the socket
- * @param len the length of the buffer
- * @param peer_sockaddr the peer address structure
+ * @param buf_len the length of the buffer
+ * @param peer the peer address structure
  * @param flags the flags to pass; accroding to sendto(2)
- * @return  On success, these calls return the number of bytes sent.  
- *          On error, -1 is returned, and errno is set appropriately. 
+ * @return  On success, these calls return the number of bytes sent.
+ *          On error, -1 is returned, and errno is set appropriately.
  */
-ssize_t al_sendto(int32_t sockfd, const void * buf, size_t len, const struct sockaddr * peer_sockaddr, const int32_t flags)
+ssize_t al_sendto(int32_t sockfd, const void *buf, const size_t buf_len, struct sockaddr *peer, const int32_t flags)
 {
-    int fret = -1;
-    socklen_t sock_len = 0;
-    if (-1 == check_sock(sockfd))
+    int fret = 0;
+    if (-1 != check_sock(sockfd))
     {
-        return -1;
-    }
-    
-    if(NULL == peer_sockaddr)
-    {
-        return -1;
-    }
 
-    fret = sendto(sockfd, buf, len, flags, peer_sockaddr, sizeof(peer_sockaddr));
-    if(-1 == fret)
+        if ((NULL != buf) && (NULL != peer) && (0 < buf_len))
+        {
+            socklen_t len = sizeof(*peer);
+            fret = sendto(sockfd, (const char *)buf, buf_len,
+                          flags, peer, len);
+            if (-1 == fret)
+            {
+                perror("sendto");
+            }
+        }
+        else
+        {
+            fret = -1;
+        }
+    }
+    else
     {
-        db_perror("al_sendto"); 
+        fret = -1;
     }
 
     return fret;
-
 }

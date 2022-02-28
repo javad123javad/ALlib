@@ -17,40 +17,35 @@ void tearDown()
 
 }
 
-void test_srv_open_sock(void)
+void test_cli_open_sock(void)
 {
     g_sock  = al_srv_open_sock(SOCK_UDP);
     TEST_ASSERT_NOT_EQUAL(-1, g_sock);
 }
 
-void test_srv_bind_sock(void)
-{
-    TEST_ASSERT_NOT_EQUAL(-1, al_srv_bind_sock(g_sock, NULL, 1368));
-}
-
-void test_srv_listen_sock()
-{
-    TEST_ASSERT_NOT_EQUAL(-1, al_srv_listen_sock(g_sock,4));
-}
-
-void test_srv_accept()
-{
-    struct sockaddr_in client = {0};
-    g_cli = al_srv_accept_sock(g_sock, &client);
-    TEST_ASSERT_NOT_EQUAL(-1, g_cli);
-}
-
 void test_cli_sendto()
 {
     const char test_str[] = "Hello\n";
-    //TODO: al_sendto should be tested.
-    // TEST_ASSERT_EQUAL(strlen(test_str),
-    //                   al_s(cli_sock, test_str, strlen(test_str))); // al_sendto
+    struct sockaddr_in cliaddr;
+    char buf[BUFFER_SIZE] = {0};
+    ssize_t snd_len;
+    cliaddr.sin_family = AF_INET;
+    cliaddr.sin_addr.s_addr   = inet_addr("192.168.1.12");
+    cliaddr.sin_port   = htons(35000);
+    snd_len = al_sendto(g_sock, test_str, strlen(test_str), &cliaddr, 0);
+    TEST_ASSERT_NOT_EQUAL(-1, snd_len);
+
 }
 
 void test_cli_recvfrom()
 {
     // TODO: al_recvfrom should be tested here
+    struct sockaddr cliaddr;
+    char buf[BUFFER_SIZE] = {0};
+    ssize_t rcv_len;
+    rcv_len = al_recvfrom(g_sock, buf, BUFFER_SIZE, &cliaddr, 0);
+    TEST_ASSERT_NOT_EQUAL(-1, rcv_len);
+    fprintf(stderr,"RECV:%s\n", buf);
 }
 
 
@@ -66,7 +61,8 @@ int main(void)
 {
     UNITY_BEGIN();
 
-    RUN_TEST(test_cli_connect);
+    RUN_TEST(test_cli_open_sock);
+
     RUN_TEST(test_cli_sendto);
     RUN_TEST(test_cli_recvfrom);
     close(g_cli);
