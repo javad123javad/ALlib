@@ -45,6 +45,7 @@ add_executable(AL_test main.c)
 target_link_libraries(AL_test al)
 ```
 ## Examples
+* Server Examples
 ### TCP Server Polling Example
 ```c
 #include <al.h>
@@ -120,38 +121,89 @@ int main()
 
 int main(void)
 {
-    int32_t fret = 0, len;
-    char msg[BUF_LEN] = {0};
-    struct cli_addr;
+    int fret = 0, len;
+    char msg[BUF_LEN] = {0}, buf[]="BYE\r";
+    struct sockaddr_in clieaddr;
+    clieaddr.sin_family = AF_INET;
+    clieaddr.sin_port = htons(35000);
+    clieaddr.sin_addr.s_addr = inet_addr("192.168.1.12");
+    len = sizeof(clieaddr);
+    g_sock = al_srv_open_sock(SOCK_UDP);
+    fret = al_srv_bind_sock(g_sock, NULL, 35000);
 
-    int udp_sock  = al_srv_open_sock(SOCK_UDP);
-    fret = al_srv_bind_sock(udp_sock, NULL, 35000);
-    while (1)
+    if( -1 != fret)
     {
-        fret = recvfrom(udp_sock, msg, BUF_LEN, 0, (struct sockaddr *)&cli_addr, &len);
-        fprintf(stdout, "MSG:%s\n", msg);
-        bzero(msg, strlen(msg));
+       
+        while (1)
+        {
+            fret = al_recvfrom(g_sock,msg, 1024, (struct sockaddr *)&clieaddr, 0);
+            fprintf(stderr, "fret:%d, MSG:%s, IP:%s\n", fret, msg, inet_ntoa(clieaddr.sin_addr));
+
+            al_sendto(g_sock, buf, strlen(buf), &clieaddr,0);
+            fprintf(stderr, "fret:%d\n", fret);
+            bzero(msg, strlen(msg));
+        }
     }
 }
 ```
-### Client Example
+* Client Examples
+### TCP Client Example
 ```c
 #include <al.h>
 #include <stdio.h>
 #include <unistd.h>
 
-int client_sock;
-    char buf[1024] = {0};
-    client_sock = al_client_connect("127.0.0.1",1368);
+#define BUF_LEN     1024
+#define SERVER_PORT 1368
+
+int main()
+{
+    int client_sock;
+    char buf[BUF_LEN] = {0};
+    client_sock = al_client_connect("127.0.0.1",SERVER_PORT);
     if(client_sock < 0)
     {
         exit(EXIT_FAILURE);
     }
     al_write_sock(client_sock,"Hello\n",6);
-    al_read_sock(client_sock, buf, 1024);
+    al_read_sock(client_sock, buf, BUF_LEN);
+    printf("Recv:%s\n", buf);
+    return 0;
+    }
+}
+```
+### UDP Client Example
+As the UDP is changing constantly, the examples also changes as well.
+```c
+#include <al.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#define BUF_LEN     1024
+#define SERVER_PORT 1368
+
+int main()
+{
+    int client_sock;
+    char buf[BUF_LEN] = {0};
+    const char test_str[] = "Hello\n";
+    struct sockaddr_in cliaddr = {0};    
+    cliaddr.sin_family = AF_INET;
+    cliaddr.sin_addr.s_addr   = inet_addr("127.0.0.1");
+    cliaddr.sin_port   = htons(SERVER_PORT);
+    client_sock = al_srv_open_sock(SOCK_UDP);
+
+    if(client_sock < 0)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    al_sendto(client_sock, test_str, strlen(test_str), &cliaddr, 0);
+    al_recvfrom(client_sock, buf, BUF_LEN, &cliaddr, 0);
     printf("Recv:%s\n", buf);
     return 0;
 }
+
 ```
 
 ## Contributing
