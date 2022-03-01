@@ -48,7 +48,7 @@ int32_t al_srv_accept_sock(int32_t sockfd, struct sockaddr_in *cli);
 int32_t al_srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload * payload));
 
 int32_t al_close_sock(int32_t sockfd);
-int32_t al_client_connect(const char ip_addr[], const uint16_t port_num);
+int32_t al_client_connect(const char ip_addr[], const uint16_t port_num, sock_type_t conn_type);
 int32_t al_get_ip_addr(char ip_addr[], const size_t len);
 int32_t al_get_mac_addr(const char iface[], char mac_addr[], const size_t len);
 int32_t al_get_if_stats(const char iface[], struct rtnl_link_stats * stats);
