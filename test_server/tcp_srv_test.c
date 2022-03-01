@@ -23,7 +23,7 @@ void test_al_srv_open_sock(void)
 void test_srv_bind_sock(void)
 {
 
-    TEST_ASSERT_GREATER_OR_EQUAL_INT32(0, al_srv_bind_sock(g_sock, NULL, 35000));
+    TEST_ASSERT_GREATER_OR_EQUAL_INT32(0, al_srv_bind_sock(g_sock, NULL, 1368));
     
     
 }

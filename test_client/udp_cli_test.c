@@ -52,17 +52,17 @@ void test_cli_recvfrom()
 void test_cli_connect()
 {
     // TODO: new connect function should be implemented for UDP
-    // cli_sock = al_cli_connect("127.0.0.1", 1368);
+    g_sock = al_client_connect("192.168.1.12", 35000, SOCK_UDP);
 
-    // TEST_ASSERT_NOT_EQUAL(-1, cli_sock);
+    TEST_ASSERT_NOT_EQUAL(-1, g_sock);
 }
 
 int main(void)
 {
     UNITY_BEGIN();
 
-    RUN_TEST(test_cli_open_sock);
-
+    // RUN_TEST(test_cli_open_sock);
+    RUN_TEST(test_cli_connect);
     RUN_TEST(test_cli_sendto);
     RUN_TEST(test_cli_recvfrom);
     close(g_cli);

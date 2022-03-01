@@ -606,7 +606,7 @@ int32_t al_client_connect(const char ip_addr[],
         break;
     }
 
-    return -1;
+    return cli_sock;
     
 }
 
