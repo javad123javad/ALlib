@@ -512,6 +512,30 @@ int32_t al_srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload *payload))
     return fret;
 }
 
+static int32_t udp_cli_connect(const char * srv_ip, const int32_t srv_port)
+{
+    int32_t fret = 0;
+    int32_t client_sock;
+    struct sockaddr_in cliaddr = {0};    
+    cliaddr.sin_family = AF_INET;
+    cliaddr.sin_addr.s_addr   = inet_addr(srv_ip);
+    cliaddr.sin_port   = htons(srv_port);
+    
+    client_sock = al_srv_open_sock(SOCK_UDP);
+    if(client_sock < 0)
+    {
+        perror("udp_cli_connect");
+        fret = -1;
+    }
+    else
+    {
+        fret = client_sock;
+    }
+
+    return fret;
+
+}
+
 /**
  * @brief al_client_connect:   connect to a server
  *
