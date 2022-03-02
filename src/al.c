@@ -513,14 +513,43 @@ int32_t al_srv_serve_reqs(int32_t sockfd, void (*serve_cb)(cpayload *payload))
 }
 
 /**
- * @brief al_client_connect:   connect to a server
- *
- * @param ip_addr the ip address of the server
- * @param port_num the port number of the server
+ * @brief static function for udp client to server connection
+ * 
+ * @param srv_ip server ip address
+ * @param srv_port server listening port
  * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
  */
-int32_t al_client_connect(const char ip_addr[],
-                          const uint16_t port_num)
+static int32_t udp_cli_connect(const char * srv_ip, const int32_t srv_port)
+{
+    int32_t fret = 0;
+    int32_t client_sock;
+    struct sockaddr_in cliaddr = {0};    
+    cliaddr.sin_family = AF_INET;
+    cliaddr.sin_addr.s_addr   = inet_addr(srv_ip);
+    cliaddr.sin_port   = htons(srv_port);
+    
+    client_sock = al_srv_open_sock(SOCK_UDP);
+    if(client_sock < 0)
+    {
+        perror("udp_cli_connect");
+        fret = -1;
+    }
+    else
+    {
+        fret = client_sock;
+    }
+
+    return fret;
+}
+
+/**
+ * @brief static function for tcp client to server connection
+ * 
+ * @param srv_ip server ip address
+ * @param srv_port server listening port
+ * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
+ */
+static int32_t tcp_cli_connect(const char * srv_ip, const int32_t srv_port)
 {
     int32_t cli_sock = -1;
     int32_t fret = -1;
@@ -536,8 +565,8 @@ int32_t al_client_connect(const char ip_addr[],
 
     bzero(&client_addr, sizeof(client_addr));
     client_addr.sin_family = AF_INET;
-    client_addr.sin_addr.s_addr = inet_addr(ip_addr);
-    client_addr.sin_port = htons(port_num);
+    client_addr.sin_addr.s_addr = inet_addr(srv_ip);
+    client_addr.sin_port = htons(srv_port);
 
     fret = connect(cli_sock, (struct sockaddr *)&client_addr,
                    sizeof(client_addr));
@@ -550,6 +579,35 @@ int32_t al_client_connect(const char ip_addr[],
     }
 
     return cli_sock;
+}
+
+/**
+ * @brief al_client_connect:   connect to a server
+ *
+ * @param ip_addr the ip address of the server
+ * @param port_num the port number of the server
+ * @param conn_type Type of the connection. see sock_type_t for the supported protocols.
+ * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
+ */
+int32_t al_client_connect(const char ip_addr[],
+                          const uint16_t port_num, sock_type_t conn_type)
+{
+    int32_t cli_sock = -1;
+    switch (conn_type)
+    {
+    case SOCK_TCP:
+        cli_sock = tcp_cli_connect(ip_addr, port_num);
+        break;
+    case SOCK_UDP:
+        cli_sock = udp_cli_connect(ip_addr,port_num);
+        break;
+    default:
+        cli_sock = -1;
+        break;
+    }
+
+    return cli_sock;
+    
 }
 
 /* UDP functions */

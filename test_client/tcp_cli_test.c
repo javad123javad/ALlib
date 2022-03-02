@@ -60,7 +60,7 @@ void test_cli_read()
 
 void test_cli_connect()
 {
-    cli_sock = al_client_connect("127.0.0.1", 1368);
+    cli_sock = al_client_connect("127.0.0.1", 1368, SOCK_TCP);
 
     TEST_ASSERT_NOT_EQUAL(-1, cli_sock);
 }
