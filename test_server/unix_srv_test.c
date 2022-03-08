@@ -5,6 +5,8 @@
 
 int g_sock;
 static int g_cli;
+#define AL_UNIX_FILE        "/tmp/alunix.sock"
+
 void setUp()
 {
 
@@ -24,7 +26,7 @@ void test_al_srv_open_sock(void)
 void test_al_unix_srv_bind(void)
 {
 
-    TEST_ASSERT_GREATER_OR_EQUAL_INT32(0, al_unix_srv_bind(g_sock,"/tmp/alunix.sock"));
+    TEST_ASSERT_GREATER_OR_EQUAL_INT32(0, al_unix_srv_bind(g_sock, AL_UNIX_FILE));
     
 }
 
@@ -61,8 +63,8 @@ void test_cli_read()
 void serv_cb(cpayload * payload)
 {
     
-
-
+    fprintf(stderr,"Callback: %s\n", payload->payload);
+    al_write_sock(payload->cli_sock, payload->payload, payload->payload_len);
 
 }
 void test_srv_accepts()
@@ -77,9 +79,10 @@ int main(void)
     RUN_TEST(test_al_srv_open_sock);
     RUN_TEST(test_al_unix_srv_bind);
     RUN_TEST(test_srv_listen_sock);
-    RUN_TEST(test_srv_accept);
-    RUN_TEST(test_cli_read);
-    RUN_TEST(test_cli_write);
+    RUN_TEST(test_srv_accepts);
+    // RUN_TEST(test_srv_accept);
+    // RUN_TEST(test_cli_read);
+    // RUN_TEST(test_cli_write);
     close(g_cli);
     close(g_sock);
     return UNITY_END();

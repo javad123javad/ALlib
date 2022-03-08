@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define AL_UNIX_FILE        "/tmp/alunix.sock"
+
 static int g_sock;
 static int g_cli;
 static int32_t cli_sock;
@@ -17,7 +19,7 @@ void tearDown()
 
 void test_srv_open_sock(void)
 {
-    g_sock = al_srv_open_sock(SOCK_TCP);
+    g_sock = al_srv_open_sock(SOCK_UNIX);
     TEST_ASSERT_NOT_EQUAL(-1, g_sock);
 }
 
@@ -60,7 +62,7 @@ void test_cli_read()
 
 void test_cli_connect()
 {
-    cli_sock = al_client_connect("127.0.0.1", 1368, SOCK_TCP);
+    cli_sock = al_client_connect(AL_UNIX_FILE, 0, SOCK_UNIX);
 
     TEST_ASSERT_NOT_EQUAL(-1, cli_sock);
 }
