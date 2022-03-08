@@ -10,6 +10,8 @@
 #define AL_H_
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -31,8 +33,9 @@ typedef struct _client_payload
 
 typedef enum _sock_type_
 {
-    SOCK_TCP = 0x00,
-    SOCK_UDP = 0x01
+    SOCK_TCP    = 0x00,
+    SOCK_UDP    = 0x01,
+    SOCK_UNIX   = 0x02
 }sock_type_t;
 
 
@@ -61,6 +64,8 @@ ssize_t al_read_sock(int32_t sockfd, void * buf, size_t len);
 ssize_t al_recvfrom(int32_t sockfd, void * buf, size_t len, struct sockaddr * cli_sockaddr, const int32_t flags);
 ssize_t al_sendto(int32_t sockfd, const void *buf, const size_t buf_len, struct sockaddr *peer, const int32_t flags);
 
+/* UNIX domain sockets */
+int32_t al_unix_srv_bind(int32_t sockfd, const char * sock_name);
 #ifdef __cplusplus
     }
 #endif

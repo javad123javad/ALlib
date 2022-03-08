@@ -72,6 +72,9 @@ int32_t al_srv_open_sock(const sock_type_t sock_type)
         break;
     case SOCK_UDP:
         sock = socket(AF_INET, SOCK_DGRAM, 0);
+    case SOCK_UNIX:
+        sock = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+        break;
 
     default:
         break;
@@ -126,6 +129,47 @@ int32_t al_srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t po
     return fret;
 }
 
+/**
+ * @brief al_unix_srv_bind: bind socket to the name
+ * 
+ * @param sock_name the name to be binded
+ * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
+ */
+int32_t al_unix_srv_bind(int32_t sockfd, const char * sock_name)
+{
+    int32_t fret = 0;
+    struct sockaddr_un name;
+
+    if(sock_name == NULL)
+    {
+        //TODO: random name sockets should be used.
+        return -1;
+    }
+    
+    /* If the file already exist, remove it */
+    /*TODO: THIS IS DANGEROUS!!!!  */
+    /*FIXIT */
+    fret = access(sock_name, F_OK);
+    if(0 == fret)
+    {
+        unlink(sock_name);
+    }
+
+    bzero(&name, sizeof(struct sockaddr_un));
+    name.sun_family = AF_UNIX;
+    strncpy(name.sun_path, sock_name, sizeof(name.sun_path) -1);
+
+    fret = bind(sockfd, (const struct sockaddr*)&name, sizeof(struct sockaddr_un));
+    if(-1 == fret)
+    {
+        db_perror("al_unix_srv_bind");
+        close(sockfd);
+        unlink(sock_name);
+        
+    }
+    return fret;
+
+}
 /**
  * @brief al_srv_listen_sock:   listens on a socket
  *
@@ -600,6 +644,9 @@ int32_t al_client_connect(const char ip_addr[],
         break;
     case SOCK_UDP:
         cli_sock = udp_cli_connect(ip_addr,port_num);
+        break;
+    case SOCK_UNIX:
+
         break;
     default:
         cli_sock = -1;
