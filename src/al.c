@@ -72,6 +72,9 @@ int32_t al_srv_open_sock(const sock_type_t sock_type)
         break;
     case SOCK_UDP:
         sock = socket(AF_INET, SOCK_DGRAM, 0);
+    case SOCK_UNIX:
+        sock = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+        break;
 
     default:
         break;
@@ -126,6 +129,47 @@ int32_t al_srv_bind_sock(int32_t sockfd, const char bind_ip[], const uint16_t po
     return fret;
 }
 
+/**
+ * @brief al_unix_srv_bind: bind socket to the name
+ * 
+ * @param sock_name the name to be binded
+ * @return int32_t On success: 0, On failure: -1 and errno is set appropriately
+ */
+int32_t al_unix_srv_bind(int32_t sockfd, const char * sock_name)
+{
+    int32_t fret = 0;
+    struct sockaddr_un name;
+
+    if(sock_name == NULL)
+    {
+        //TODO: random name sockets should be used.
+        return -1;
+    }
+    
+    /* If the file already exist, remove it */
+    /*TODO: THIS IS DANGEROUS!!!!  */
+    /*FIXIT */
+    fret = access(sock_name, F_OK);
+    if(0 == fret)
+    {
+        unlink(sock_name);
+    }
+
+    bzero(&name, sizeof(struct sockaddr_un));
+    name.sun_family = AF_UNIX;
+    strncpy(name.sun_path, sock_name, sizeof(name.sun_path) -1);
+
+    fret = bind(sockfd, (const struct sockaddr*)&name, sizeof(struct sockaddr_un));
+    if(-1 == fret)
+    {
+        db_perror("al_unix_srv_bind");
+        close(sockfd);
+        unlink(sock_name);
+        
+    }
+    return fret;
+
+}
 /**
  * @brief al_srv_listen_sock:   listens on a socket
  *
@@ -582,24 +626,66 @@ static int32_t tcp_cli_connect(const char * srv_ip, const int32_t srv_port)
 }
 
 /**
+ * @brief static function for UNIX domain server connection
+ * 
+ * @param addr server UNIX domain file
+ * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
+ */
+static int32_t unix_cli_connect(const char *addr)
+{
+    int32_t fret;
+    int32_t cli_sock;
+    struct sockaddr_un sock_addr;
+    
+    if(NULL == addr)
+    {
+        dbg("NULL UNIX DOMAIN file");
+        return -1;
+    }
+
+    bzero(&sock_addr, sizeof(struct sockaddr_un));
+    sock_addr.sun_family = AF_UNIX;
+    strncpy(sock_addr.sun_path, addr, sizeof(sock_addr.sun_path)-1);
+
+    cli_sock = al_srv_open_sock(SOCK_UNIX);
+    if(cli_sock == -1)
+    {
+        dbg("Client Socket Error\n");
+        return -1;
+    }
+
+    fret = connect(cli_sock, (const struct sockaddr *)&sock_addr, sizeof(struct sockaddr_un));
+    if(-1 == fret)
+    {
+        db_perror("unix_cli_connect");
+        return fret;
+    }
+
+    return cli_sock;
+
+}
+/**
  * @brief al_client_connect:   connect to a server
  *
- * @param ip_addr the ip address of the server
+ * @param addr the IP or UNIX Domain address of the server
  * @param port_num the port number of the server
  * @param conn_type Type of the connection. see sock_type_t for the supported protocols.
  * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
  */
-int32_t al_client_connect(const char ip_addr[],
+int32_t al_client_connect(const char addr[],
                           const uint16_t port_num, sock_type_t conn_type)
 {
     int32_t cli_sock = -1;
     switch (conn_type)
     {
     case SOCK_TCP:
-        cli_sock = tcp_cli_connect(ip_addr, port_num);
+        cli_sock = tcp_cli_connect(addr, port_num);
         break;
     case SOCK_UDP:
-        cli_sock = udp_cli_connect(ip_addr,port_num);
+        cli_sock = udp_cli_connect(addr,port_num);
+        break;
+    case SOCK_UNIX:
+        cli_sock = unix_cli_connect(addr);
         break;
     default:
         cli_sock = -1;
