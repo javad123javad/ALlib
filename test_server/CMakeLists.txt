@@ -10,8 +10,15 @@ ADD_EXECUTABLE( allib_srv_test_udp udp_srv_test.c
     ../include/al.h
     )
 
+ADD_EXECUTABLE( allib_srv_test_unix unix_srv_test.c
+    ../src/al.c
+    ../include/al.h
+    )
+
 ADD_TEST(Allib_srv_test_tcp allib_srv_test_tcp)
 ADD_TEST(Allib_srv_test_udp allib_srv_test_udp)
+ADD_TEST(Allib_srv_test_unix allib_srv_test_unix)
 
 target_link_libraries(allib_srv_test_tcp unity )
 target_link_libraries(allib_srv_test_udp unity )
+target_link_libraries(allib_srv_test_unix unity )
