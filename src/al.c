@@ -626,27 +626,66 @@ static int32_t tcp_cli_connect(const char * srv_ip, const int32_t srv_port)
 }
 
 /**
+ * @brief static function for UNIX domain server connection
+ * 
+ * @param addr server UNIX domain file
+ * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
+ */
+static int32_t unix_cli_connect(const char *addr)
+{
+    int32_t fret;
+    int32_t cli_sock;
+    struct sockaddr_un sock_addr;
+    
+    if(NULL == addr)
+    {
+        dbg("NULL UNIX DOMAIN file");
+        return -1;
+    }
+
+    bzero(&sock_addr, sizeof(struct sockaddr_un));
+    sock_addr.sun_family = AF_UNIX;
+    strncpy(sock_addr.sun_path, addr, sizeof(sock_addr.sun_path)-1);
+
+    cli_sock = al_srv_open_sock(SOCK_UNIX);
+    if(cli_sock == -1)
+    {
+        dbg("Client Socket Error\n");
+        return -1;
+    }
+
+    fret = connect(cli_sock, (const struct sockaddr *)&sock_addr, sizeof(struct sockaddr_un));
+    if(-1 == fret)
+    {
+        db_perror("unix_cli_connect");
+        return fret;
+    }
+
+    return cli_sock;
+
+}
+/**
  * @brief al_client_connect:   connect to a server
  *
- * @param ip_addr the ip address of the server
+ * @param addr the IP or UNIX Domain address of the server
  * @param port_num the port number of the server
  * @param conn_type Type of the connection. see sock_type_t for the supported protocols.
  * @return int32_t On success: client socket, On failure: -1 and errno is set appropriately
  */
-int32_t al_client_connect(const char ip_addr[],
+int32_t al_client_connect(const char addr[],
                           const uint16_t port_num, sock_type_t conn_type)
 {
     int32_t cli_sock = -1;
     switch (conn_type)
     {
     case SOCK_TCP:
-        cli_sock = tcp_cli_connect(ip_addr, port_num);
+        cli_sock = tcp_cli_connect(addr, port_num);
         break;
     case SOCK_UDP:
-        cli_sock = udp_cli_connect(ip_addr,port_num);
+        cli_sock = udp_cli_connect(addr,port_num);
         break;
     case SOCK_UNIX:
-
+        cli_sock = unix_cli_connect(addr);
         break;
     default:
         cli_sock = -1;
