@@ -4,6 +4,11 @@ ALlib is a lightweight socket library for embedded systems written in C. By usin
 ## Compiling and Installation
 
 ALlib is based on Cmake. It's possible to make `ALlib` both as static and shared library.
+If you need test functions, uncomment below two lines in `CmakeLists.txt`
+```cmake
+#add_subdirectory( test_server )
+#add_subdirectory(test_client)
+```
 ### Static library
 ```bash
 $ git clone git@github.com:javad123javad/ALlib.git
@@ -165,18 +170,18 @@ int main()
     int fret = 0;
     int server_sock;
     server_sock = al_srv_open_sock(SOCK_UNIX);
-    fret = al_unix_srv_bind(g_sock, AL_UNIX_FILE);
+    fret = al_unix_srv_bind(server_sock, AL_UNIX_FILE);
     if(fret < 0)
     {
         exit(-1);
     }
-    fret = al_srv_listen_sock(g_sock,4);
+    fret = al_srv_listen_sock(server_sock,4);
     if(-1 == fret)
     {
         perror("Linsten");
         exit(-1);
     }
-    fret = al_srv_serve_reqs(g_sock,serv_cb);
+    fret = al_srv_serve_reqs(server_sock,serv_cb);
    
     return 0;
 }
