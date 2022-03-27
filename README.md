@@ -9,7 +9,7 @@ If you need test functions, uncomment below two lines in `CmakeLists.txt`
 #add_subdirectory( test_server )
 #add_subdirectory(test_client)
 ```
-### Static library
+### Shared library
 ```bash
 $ git clone git@github.com:javad123javad/ALlib.git
 $ mkdir build
@@ -19,7 +19,7 @@ $ make
 $ sudo make install
 ```
 
-### Shared library
+### Static library
 To build the `ALlib` as shared library, the `-DBUILD_SHARED_LIBS=ON` should passed to the cmake:
 ```bash
 $ git clone git@github.com:javad123javad/ALlib.git
